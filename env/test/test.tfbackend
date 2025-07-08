@@ -1,0 +1,4 @@
+resource_group_name  = "rg-detsi-prez-tfstate"
+storage_account_name = "detsiprez10041"
+container_name       = "tfstate"
+key                  = "kai-test/terraform.tfstate"

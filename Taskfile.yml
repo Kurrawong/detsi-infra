@@ -1,0 +1,53 @@
+# https://taskfile.dev
+
+version: "3"
+
+vars:
+  ARM_ACCESS_KEY:
+    sh: az storage account keys list --resource-group rg-detsi-prez-tfstate --account-name detsiprez10041 --query '[0].value' -o tsv
+
+tasks:
+  format:
+    desc: Format terraform files.
+    cmd: terraform fmt --recursive
+
+  validate:
+    desc: Validate terraform files.
+    cmd: terraform validate
+
+  code:
+    desc: Format and validate terraform files.
+    cmds:
+      - task: format
+      - task: validate
+
+  test:init:storage:
+    desc: This is performed once to set up the storage account for the test environment.
+    env:
+      RESOURCE_GROUP_NAME: rg-detsi-prez-tfstate
+      STORAGE_ACCOUNT_NAME: detsiprez10041
+      CONTAINER_NAME: tfstate
+    cmds:
+      - az group create --name $RESOURCE_GROUP_NAME --location australiaeast
+      - az storage account create --resource-group $RESOURCE_GROUP_NAME --name $STORAGE_ACCOUNT_NAME --sku Standard_LRS --encryption-services blob
+      - az storage container create --name $CONTAINER_NAME --account-name $STORAGE_ACCOUNT_NAME
+
+  test:init:
+    env:
+      ARM_ACCESS_KEY: "{{.ARM_ACCESS_KEY}}"
+    cmd: terraform init -reconfigure -backend-config=env/test/test.tfbackend
+
+  test:plan:
+    env:
+      ARM_ACCESS_KEY: "{{.ARM_ACCESS_KEY}}"
+    cmd: terraform plan -var-file=env/test/test.tfvars
+
+  test:apply:
+    env:
+      ARM_ACCESS_KEY: "{{.ARM_ACCESS_KEY}}"
+    cmd: terraform apply -var-file=env/test/test.tfvars
+
+  test:destroy:
+    env:
+      ARM_ACCESS_KEY: "{{.ARM_ACCESS_KEY}}"
+    cmd: terraform destroy -var-file=env/test/test.tfvars
