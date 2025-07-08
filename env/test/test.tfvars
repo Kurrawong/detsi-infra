@@ -10,3 +10,5 @@ prez_api_app = {
 dns = {
   zone_name = "detsi.dev.kurrawong.ai"
 }
+github_repository  = "Kurrawong/detsi-vocabs"
+github_environment = "production"

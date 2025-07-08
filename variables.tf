@@ -25,3 +25,13 @@ variable "dns" {
     zone_name = string
   })
 }
+
+variable "github_repository" {
+  description = "GitHub repository in format 'owner/repo-name'"
+  type        = string
+}
+
+variable "github_environment" {
+  description = "GitHub environment"
+  type        = string
+}

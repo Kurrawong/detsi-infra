@@ -4,11 +4,19 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 3.0"
     }
+    azuread = {
+      source  = "hashicorp/azuread"
+      version = "~> 2.0"
+    }
   }
 }
 
 provider "azurerm" {
   features {}
+}
+
+provider "azuread" {
+  # Configuration options
 }
 
 resource "azurerm_resource_group" "rg" {
@@ -48,6 +56,13 @@ resource "azurerm_container_app" "app" {
   container_app_environment_id = azurerm_container_app_environment.cae.id
   resource_group_name          = azurerm_resource_group.rg.name
   revision_mode                = "Multiple"
+
+  # Ignore changes to template as we'll manage revisions via GitHub Actions
+  lifecycle {
+    ignore_changes = [
+      template
+    ]
+  }
 
   template {
     min_replicas = 0
@@ -121,4 +136,34 @@ resource "azurerm_dns_txt_record" "domain_verification" {
   record {
     value = azurerm_container_app.app.custom_domain_verification_id
   }
+}
+
+data "azuread_client_config" "current" {}
+
+data "azurerm_client_config" "current" {}
+
+resource "azuread_application" "github_actions" {
+  display_name = "sp-${var.project}-${var.environment}-github-actions"
+  owners       = [data.azuread_client_config.current.object_id]
+}
+
+resource "azuread_service_principal" "github_actions" {
+  client_id                    = azuread_application.github_actions.client_id
+  app_role_assignment_required = false
+  owners                       = [data.azuread_client_config.current.object_id]
+}
+
+resource "azuread_application_federated_identity_credential" "github_actions" {
+  application_id = azuread_application.github_actions.id
+  display_name   = "github-actions"
+  description    = "GitHub Actions federated identity credential"
+  audiences      = ["api://AzureADTokenExchange"]
+  issuer         = "https://token.actions.githubusercontent.com"
+  subject        = "repo:${var.github_repository}:environment:${var.github_environment}"
+}
+
+resource "azurerm_role_assignment" "github_actions_contributor" {
+  scope                = azurerm_resource_group.rg.id
+  role_definition_name = "Contributor"
+  principal_id         = azuread_service_principal.github_actions.object_id
 }
