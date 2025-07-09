@@ -1,5 +1,6 @@
 variable "project" {
-  type = string
+  description = "The name of the project."
+  type        = string
 }
 
 variable "environment" {
@@ -11,7 +12,7 @@ variable "region" {
 }
 
 variable "prez_api_app" {
-  description = "Configuration for the Prez API container app."
+  description = "Prez API application configuration"
   type = object({
     name   = string
     image  = string
@@ -34,4 +35,10 @@ variable "github_repository" {
 variable "github_environment" {
   description = "GitHub environment"
   type        = string
+}
+
+variable "static_web_app_region" {
+  description = "The Azure region for the Static Web App. Static Web Apps are not available in all regions."
+  type        = string
+  default     = "eastasia"
 }

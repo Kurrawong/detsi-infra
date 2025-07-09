@@ -138,6 +138,28 @@ resource "azurerm_dns_txt_record" "domain_verification" {
   }
 }
 
+resource "azurerm_static_web_app" "prez_ui" {
+  name                = "stapp-${var.project}-${var.environment}-prez-ui"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = var.static_web_app_region
+}
+
+resource "azurerm_dns_cname_record" "prez_ui" {
+  count               = var.dns.zone_name != null ? 1 : 0
+  name                = "prez"
+  zone_name           = azurerm_dns_zone.custom_domain[0].name
+  resource_group_name = azurerm_resource_group.rg.name
+  ttl                 = 300
+  record              = azurerm_static_web_app.prez_ui.default_host_name
+}
+
+resource "azurerm_static_web_app_custom_domain" "prez_ui" {
+  count             = var.dns.zone_name != null ? 1 : 0
+  static_web_app_id = azurerm_static_web_app.prez_ui.id
+  domain_name       = "prez.${azurerm_dns_zone.custom_domain[0].name}"
+  validation_type   = "cname-delegation"
+}
+
 data "azuread_client_config" "current" {}
 
 data "azurerm_client_config" "current" {}

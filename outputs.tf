@@ -49,3 +49,29 @@ output "github_actions_federated_credential_id" {
   description = "ID of the federated identity credential for GitHub Actions"
   value       = azuread_application_federated_identity_credential.github_actions.id
 }
+
+output "container_app_fqdn" {
+  description = "The FQDN of the container app"
+  value       = azurerm_container_app.app.ingress[0].fqdn
+}
+
+output "prez_ui_static_web_app_url" {
+  description = "The URL of the Prez UI Static Web App."
+  value       = azurerm_static_web_app.prez_ui.default_host_name
+}
+
+output "prez_ui_static_web_app_deployment_key" {
+  description = "The deployment key for the Prez UI Static Web App."
+  value       = azurerm_static_web_app.prez_ui.api_key
+  sensitive   = true
+}
+
+output "prez_ui_static_web_app_custom_domain_url" {
+  description = "The custom domain URL of the Prez UI Static Web App."
+  value       = var.dns.zone_name != null ? "https://prez.${var.dns.zone_name}" : ""
+}
+
+output "prez_ui_static_web_app_name" {
+  description = "The name of the Prez UI Static Web App."
+  value       = azurerm_static_web_app.prez_ui.name
+}
