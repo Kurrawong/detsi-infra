@@ -76,17 +76,12 @@ resource "azurerm_container_app" "app" {
 
       env {
         name  = "SPARQL_REPO_TYPE"
-        value = "pyoxigraph"
+        value = "pyoxigraph_persistent"
       }
 
       env {
         name  = "ENABLE_SPARQL_ENDPOINT"
         value = "true"
-      }
-
-      env {
-        name  = "LOCAL_RDF_DIR"
-        value = "/app/rdf"
       }
 
       liveness_probe {
