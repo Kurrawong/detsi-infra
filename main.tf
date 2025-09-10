@@ -9,6 +9,10 @@ terraform {
       version = "~> 2.0"
     }
   }
+  
+  backend "azurerm" {
+    # Backend configuration will be provided via -backend-config
+  }
 }
 
 provider "azurerm" {
