@@ -42,3 +42,14 @@ variable "static_web_app_region" {
   type        = string
   default     = "eastasia"
 }
+
+variable "prez_api" {
+  description = "Function App configuration"
+  type = object({
+    name                 = string
+    runtime_version      = string
+    runtime              = string
+    storage_account_tier = string
+    storage_replication  = string
+  })
+}

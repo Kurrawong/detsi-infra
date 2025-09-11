@@ -75,3 +75,34 @@ output "prez_ui_static_web_app_name" {
   description = "The name of the Prez UI Static Web App."
   value       = azurerm_static_web_app.prez_ui.name
 }
+
+# Function App outputs
+output "prez_api_function_app_name" {
+  description = "The name of the Prez API Function App."
+  value       = azurerm_linux_function_app.prez_api.name
+}
+
+output "prez_api_function_app_url" {
+  description = "The public URL of the Prez API Function App."
+  value       = "https://${azurerm_linux_function_app.prez_api.default_hostname}"
+}
+
+output "prez_api_function_app_custom_domain_url" {
+  description = "The custom domain URL of the Prez API Function App."
+  value       = var.dns.zone_name != null ? "https://prez-api.${var.dns.zone_name}" : ""
+}
+
+output "prez_api_storage_account_name" {
+  description = "The name of the storage account used by the Function App."
+  value       = azurerm_storage_account.function_app.name
+}
+
+output "prez_api_application_insights_name" {
+  description = "The name of the Application Insights instance for the Function App."
+  value       = azurerm_application_insights.function_app.name
+}
+
+output "prez_api_service_plan_name" {
+  description = "The name of the App Service Plan for the Function App."
+  value       = azurerm_service_plan.function_app.name
+}
