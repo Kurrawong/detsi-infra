@@ -99,6 +99,8 @@ resource "azurerm_linux_function_app" "prez_api" {
     application_stack {
       python_version = var.prez_api.runtime_version
     }
+    minimum_tls_version = "1.2"
+    ftps_state          = "Disabled"
   }
 
   app_settings = {
@@ -107,6 +109,8 @@ resource "azurerm_linux_function_app" "prez_api" {
     "ENABLE_SPARQL_ENDPOINT"   = "true"
     "SPARQL_REPO_TYPE"         = "pyoxigraph_persistent"
   }
+
+  https_only = true
 
   tags = {
     Environment = var.environment
