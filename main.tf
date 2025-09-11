@@ -23,9 +23,7 @@ provider "azurerm" {
   features {}
 }
 
-provider "azuread" {
-  # Configuration options
-}
+provider "azuread" {}
 
 resource "azurerm_resource_group" "rg" {
   name     = "rg-${var.project}-${var.environment}"
@@ -46,102 +44,12 @@ resource "azurerm_log_analytics_workspace" "logs" {
   retention_in_days   = 30
 }
 
-# resource "azurerm_container_app_environment" "cae" {
-#   name                       = "cae-${var.project}-${var.environment}"
-#   location                   = azurerm_resource_group.rg.location
-#   resource_group_name        = azurerm_resource_group.rg.name
-#   log_analytics_workspace_id = azurerm_log_analytics_workspace.logs.id
-# }
-
 resource "azurerm_dns_zone" "custom_domain" {
   count               = var.dns.zone_name != null ? 1 : 0
   name                = var.dns.zone_name
   resource_group_name = azurerm_resource_group.rg.name
 }
 
-# resource "azurerm_container_app" "app" {
-#   name                         = "ca-${var.project}-${var.environment}-${var.prez_api_app.name}"
-#   container_app_environment_id = azurerm_container_app_environment.cae.id
-#   resource_group_name          = azurerm_resource_group.rg.name
-#   revision_mode                = "Multiple"
-
-#   # Ignore changes to template as we'll manage revisions via GitHub Actions
-#   lifecycle {
-#     ignore_changes = [
-#       template
-#     ]
-#   }
-
-#   template {
-#     min_replicas = 0
-#     max_replicas = 2
-
-#     container {
-#       name   = var.prez_api_app.name
-#       image  = var.prez_api_app.image
-#       cpu    = var.prez_api_app.cpu
-#       memory = var.prez_api_app.memory
-
-#       env {
-#         name  = "SPARQL_REPO_TYPE"
-#         value = "pyoxigraph_persistent"
-#       }
-
-#       env {
-#         name  = "ENABLE_SPARQL_ENDPOINT"
-#         value = "true"
-#       }
-
-#       liveness_probe {
-#         transport = "HTTP"
-#         port      = 8000
-#         path      = "/health"
-#         timeout   = 5
-#       }
-
-#       readiness_probe {
-#         transport = "HTTP"
-#         port      = 8000
-#         path      = "/health"
-#         timeout   = 3
-#       }
-#     }
-#   }
-
-#   ingress {
-#     external_enabled = true
-#     target_port      = 8000
-#     transport        = "http"
-
-#     traffic_weight {
-#       percentage      = 100
-#       latest_revision = true
-#     }
-#   }
-# }
-
-# resource "azurerm_dns_cname_record" "prez_api" {
-#   count               = var.dns.zone_name != null ? 1 : 0
-#   name                = "prez-api"
-#   zone_name           = azurerm_dns_zone.custom_domain[0].name
-#   resource_group_name = azurerm_resource_group.rg.name
-#   ttl                 = 300
-#   record              = azurerm_container_app.app.ingress[0].fqdn
-# }
-
-# resource "azurerm_dns_txt_record" "domain_verification" {
-#   count               = var.dns.zone_name != null ? 1 : 0
-#   name                = "asuid.prez-api"
-#   zone_name           = azurerm_dns_zone.custom_domain[0].name
-#   resource_group_name = azurerm_resource_group.rg.name
-#   ttl                 = 300
-
-#   record {
-#     value = azurerm_container_app.app.custom_domain_verification_id
-#   }
-# }
-
-# Storage Account for Function App
 resource "azurerm_storage_account" "function_app" {
   name                     = "st${replace(var.project, "-", "")}${var.environment}${random_string.storage_suffix.result}"
   resource_group_name      = azurerm_resource_group.rg.name
@@ -162,7 +70,6 @@ resource "random_string" "storage_suffix" {
   upper   = false
 }
 
-# Application Insights for Function App
 resource "azurerm_application_insights" "function_app" {
   name                = "ai-${var.project}-${var.environment}-${var.prez_api.name}"
   location            = azurerm_resource_group.rg.location
@@ -177,7 +84,6 @@ resource "azurerm_application_insights" "function_app" {
   }
 }
 
-# Function App with Flex Consumption plan
 resource "azurerm_linux_function_app" "prez_api" {
   name                = "func-${var.project}-${var.environment}-${var.prez_api.name}"
   resource_group_name = azurerm_resource_group.rg.name
@@ -209,13 +115,12 @@ resource "azurerm_linux_function_app" "prez_api" {
   }
 }
 
-# App Service Plan for Function App (Flex Consumption)
 resource "azurerm_service_plan" "function_app" {
   name                = "plan-${var.project}-${var.environment}-${var.prez_api.name}"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   os_type             = "Linux"
-  sku_name            = "Y1" # Flex Consumption plan
+  sku_name            = "Y1"
 
   tags = {
     Environment = var.environment
@@ -246,7 +151,6 @@ resource "azurerm_static_web_app_custom_domain" "prez_ui" {
   validation_type   = "cname-delegation"
 }
 
-# DNS CNAME record for Function App
 resource "azurerm_dns_cname_record" "prez_api" {
   count               = var.dns.zone_name != null ? 1 : 0
   name                = "prez-api"
@@ -256,7 +160,6 @@ resource "azurerm_dns_cname_record" "prez_api" {
   record              = azurerm_linux_function_app.prez_api.default_hostname
 }
 
-# Custom domain for Function App
 resource "azurerm_app_service_custom_hostname_binding" "prez_api" {
   count               = var.dns.zone_name != null ? 1 : 0
   hostname            = "prez-api.${azurerm_dns_zone.custom_domain[0].name}"
