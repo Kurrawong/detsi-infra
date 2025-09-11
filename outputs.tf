@@ -3,15 +3,15 @@ output "resource_group_name" {
   value       = azurerm_resource_group.rg.name
 }
 
-output "prez_api_container_app_name" {
-  description = "The name of the Prez API container app."
-  value       = azurerm_container_app.app.name
-}
+# output "prez_api_container_app_name" {
+#   description = "The name of the Prez API container app."
+#   value       = azurerm_container_app.app.name
+# }
 
-output "prez_api_app_url" {
-  description = "The public URL of the Prez API container app."
-  value       = "https://${azurerm_container_app.app.ingress[0].fqdn}"
-}
+# output "prez_api_app_url" {
+#   description = "The public URL of the Prez API container app."
+#   value       = "https://${azurerm_container_app.app.ingress[0].fqdn}"
+# }
 
 output "custom_domain_url" {
   description = "The custom domain URL if configured"
@@ -23,11 +23,11 @@ output "dns_zone_name_servers" {
   value       = var.dns.zone_name != null ? azurerm_dns_zone.custom_domain[0].name_servers : null
 }
 
-output "domain_verification_id" {
-  description = "Domain verification ID for Container Apps custom domain"
-  value       = azurerm_container_app.app.custom_domain_verification_id
-  sensitive   = true
-}
+# output "domain_verification_id" {
+#   description = "Domain verification ID for Container Apps custom domain"
+#   value       = azurerm_container_app.app.custom_domain_verification_id
+#   sensitive   = true
+# }
 
 # GitHub Actions Federated Identity Credentials
 output "github_actions_client_id" {
@@ -50,10 +50,10 @@ output "github_actions_federated_credential_id" {
   value       = azuread_application_federated_identity_credential.github_actions.id
 }
 
-output "container_app_fqdn" {
-  description = "The FQDN of the container app"
-  value       = azurerm_container_app.app.ingress[0].fqdn
-}
+# output "container_app_fqdn" {
+#   description = "The FQDN of the container app"
+#   value       = azurerm_container_app.app.ingress[0].fqdn
+# }
 
 output "prez_ui_static_web_app_url" {
   description = "The URL of the Prez UI Static Web App."

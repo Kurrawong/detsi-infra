@@ -11,15 +11,15 @@ variable "region" {
   type = string
 }
 
-variable "prez_api_app" {
-  description = "Prez API application configuration"
-  type = object({
-    name   = string
-    image  = string
-    cpu    = string
-    memory = string
-  })
-}
+# variable "prez_api_app" {
+#   description = "Prez API application configuration"
+#   type = object({
+#     name   = string
+#     image  = string
+#     cpu    = string
+#     memory = string
+#   })
+# }
 
 variable "dns" {
   type = object({
