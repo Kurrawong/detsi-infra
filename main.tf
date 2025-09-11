@@ -50,7 +50,7 @@ resource "azurerm_dns_zone" "custom_domain" {
   resource_group_name = azurerm_resource_group.rg.name
 }
 
-resource "azurerm_storage_account" "function_app" {
+resource "azurerm_storage_account" "prez_api" {
   name                     = "st${replace(var.project, "-", "")}${var.environment}${random_string.storage_suffix.result}"
   resource_group_name      = azurerm_resource_group.rg.name
   location                 = azurerm_resource_group.rg.location
@@ -70,7 +70,7 @@ resource "random_string" "storage_suffix" {
   upper   = false
 }
 
-resource "azurerm_application_insights" "function_app" {
+resource "azurerm_application_insights" "prez_api" {
   name                = "ai-${var.project}-${var.environment}-${var.prez_api.name}"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
@@ -89,13 +89,13 @@ resource "azurerm_linux_function_app" "prez_api" {
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
 
-  storage_account_name       = azurerm_storage_account.function_app.name
-  storage_account_access_key = azurerm_storage_account.function_app.primary_access_key
-  service_plan_id            = azurerm_service_plan.function_app.id
+  storage_account_name       = azurerm_storage_account.prez_api.name
+  storage_account_access_key = azurerm_storage_account.prez_api.primary_access_key
+  service_plan_id            = azurerm_service_plan.prez_api.id
 
   site_config {
-    application_insights_key               = azurerm_application_insights.function_app.instrumentation_key
-    application_insights_connection_string = azurerm_application_insights.function_app.connection_string
+    application_insights_key               = azurerm_application_insights.prez_api.instrumentation_key
+    application_insights_connection_string = azurerm_application_insights.prez_api.connection_string
     application_stack {
       python_version = var.prez_api.runtime_version
     }
@@ -115,7 +115,7 @@ resource "azurerm_linux_function_app" "prez_api" {
   }
 }
 
-resource "azurerm_service_plan" "function_app" {
+resource "azurerm_service_plan" "prez_api" {
   name                = "plan-${var.project}-${var.environment}-${var.prez_api.name}"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location

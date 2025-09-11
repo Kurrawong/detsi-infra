@@ -71,15 +71,15 @@ output "prez_api_function_app_custom_domain_url" {
 
 output "prez_api_storage_account_name" {
   description = "The name of the storage account used by the Function App."
-  value       = azurerm_storage_account.function_app.name
+  value       = azurerm_storage_account.prez_api.name
 }
 
 output "prez_api_application_insights_name" {
   description = "The name of the Application Insights instance for the Function App."
-  value       = azurerm_application_insights.function_app.name
+  value       = azurerm_application_insights.prez_api.name
 }
 
 output "prez_api_service_plan_name" {
   description = "The name of the App Service Plan for the Function App."
-  value       = azurerm_service_plan.function_app.name
+  value       = azurerm_service_plan.prez_api.name
 }
