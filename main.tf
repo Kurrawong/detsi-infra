@@ -160,11 +160,25 @@ resource "azurerm_dns_cname_record" "prez_api" {
   record              = azurerm_linux_function_app.prez_api.default_hostname
 }
 
+resource "azurerm_dns_txt_record" "prez_api_domain_verification" {
+  count               = var.dns.zone_name != null ? 1 : 0
+  name                = "asuid.prez-api"
+  zone_name           = azurerm_dns_zone.custom_domain[0].name
+  resource_group_name = azurerm_resource_group.rg.name
+  ttl                 = 300
+
+  record {
+    value = azurerm_linux_function_app.prez_api.custom_domain_verification_id
+  }
+}
+
 resource "azurerm_app_service_custom_hostname_binding" "prez_api" {
   count               = var.dns.zone_name != null ? 1 : 0
   hostname            = "prez-api.${azurerm_dns_zone.custom_domain[0].name}"
   app_service_name    = azurerm_linux_function_app.prez_api.name
   resource_group_name = azurerm_resource_group.rg.name
+
+  depends_on = [azurerm_dns_txt_record.prez_api_domain_verification]
 }
 
 data "azuread_client_config" "current" {}
