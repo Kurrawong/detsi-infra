@@ -12,10 +12,6 @@ terraform {
       source  = "hashicorp/random"
       version = "~> 3.0"
     }
-    time = {
-      source  = "hashicorp/time"
-      version = "~> 0.13"
-    }
   }
 
   backend "azurerm" {
@@ -117,7 +113,7 @@ resource "azurerm_function_app_flex_consumption" "prez_api" {
     "FUNCTION_APP_AUTH_LEVEL" = "ANONYMOUS"
     "ENABLE_SPARQL_ENDPOINT"  = "true"
     "SPARQL_REPO_TYPE"        = "pyoxigraph_persistent"
-    "PYOXIGRAPH_DATA_DIR" = "/tmp/pyoxigraph_data_dir"
+    "PYOXIGRAPH_DATA_DIR"     = "/tmp/pyoxigraph_data_dir"
   }
 
   https_only = true
@@ -126,6 +122,12 @@ resource "azurerm_function_app_flex_consumption" "prez_api" {
     Environment = var.environment
     Project     = var.project
     ManagedBy   = "Terraform"
+  }
+
+  lifecycle {
+    ignore_changes = [
+      tags["hidden-link: /app-insights-resource-id"]
+    ]
   }
 }
 
@@ -147,6 +149,13 @@ resource "azurerm_static_web_app" "prez_ui" {
   name                = "stapp-${var.project}-${var.environment}-prez-ui"
   resource_group_name = azurerm_resource_group.rg.name
   location            = var.static_web_app_region
+  
+  lifecycle {
+    ignore_changes = [
+      repository_branch,
+      repository_url
+    ]
+  }
 }
 
 resource "azurerm_dns_cname_record" "prez_ui" {
@@ -180,72 +189,23 @@ resource "azurerm_dns_txt_record" "prez_api_domain_verification" {
   record {
     value = azurerm_function_app_flex_consumption.prez_api.custom_domain_verification_id
   }
-
-  timeouts {
-    create = "10m"
-    delete = "10m"
-  }
 }
 
-# Add a delay to ensure DNS propagation before hostname binding
-resource "time_sleep" "dns_propagation_delay" {
-  depends_on = [
-    azurerm_dns_cname_record.prez_api,
-    azurerm_dns_txt_record.prez_api_domain_verification
-  ]
-  create_duration = "300s" # 5 minutes for DNS propagation
+resource "azurerm_app_service_custom_hostname_binding" "prez_api" {
+  hostname            = "${var.prez_api.domain_name}.${azurerm_dns_zone.custom_domain.name}"
+  app_service_name    = azurerm_function_app_flex_consumption.prez_api.name
+  resource_group_name = azurerm_resource_group.rg.name
 }
 
+resource "azurerm_app_service_managed_certificate" "prez_api" {
+  custom_hostname_binding_id = azurerm_app_service_custom_hostname_binding.prez_api.id
+}
 
-# resource "azurerm_app_service_custom_hostname_binding" "prez_api" {
-#   hostname            = "${var.prez_api.domain_name}.${azurerm_dns_zone.custom_domain.name}"
-#   app_service_name    = azurerm_linux_function_app.prez_api.name
-#   resource_group_name = azurerm_resource_group.rg.name
-
-#   depends_on = [
-#     azurerm_dns_txt_record.prez_api_domain_verification,
-#     time_sleep.dns_propagation_delay
-#   ]
-
-#   timeouts {
-#     create = "15m"
-#     delete = "10m"
-#   }
-
-#   lifecycle {
-#     ignore_changes = [ssl_state, thumbprint]
-#   }
-# }
-
-# resource "azurerm_app_service_managed_certificate" "prez_api" {
-#   custom_hostname_binding_id = azurerm_app_service_custom_hostname_binding.prez_api.id
-
-#   depends_on = [
-#     azurerm_app_service_custom_hostname_binding.prez_api
-#   ]
-
-#   timeouts {
-#     create = "45m" # Managed certificates can take up to 30-45 minutes
-#     delete = "15m"
-#   }
-
-#   lifecycle {
-#     create_before_destroy = true
-#   }
-# }
-
-# resource "azurerm_app_service_certificate_binding" "prez_api" {
-#   hostname_binding_id = azurerm_app_service_custom_hostname_binding.prez_api.id
-#   certificate_id      = azurerm_app_service_managed_certificate.prez_api.id
-#   ssl_state           = "SniEnabled"
-
-#   depends_on = [azurerm_app_service_managed_certificate.prez_api]
-
-#   timeouts {
-#     create = "15m"
-#     delete = "10m"
-#   }
-# }
+resource "azurerm_app_service_certificate_binding" "prez_api" {
+  hostname_binding_id = azurerm_app_service_custom_hostname_binding.prez_api.id
+  certificate_id      = azurerm_app_service_managed_certificate.prez_api.id
+  ssl_state           = "SniEnabled"
+}
 
 data "azuread_client_config" "current" {}
 
