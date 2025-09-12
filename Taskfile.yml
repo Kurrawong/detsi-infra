@@ -5,6 +5,10 @@ version: "3"
 vars:
   ARM_ACCESS_KEY:
     sh: az storage account keys list --resource-group rg-detsi-prez-tfstate --account-name detsiprez10041 --query '[0].value' -o tsv
+  ARM_SUBSCRIPTION_ID:
+    sh: az account show --query id -o tsv
+  ARM_TENANT_ID:
+    sh: az account show --query tenantId -o tsv
 
 tasks:
   format:
@@ -35,19 +39,27 @@ tasks:
   test:init:
     env:
       ARM_ACCESS_KEY: "{{.ARM_ACCESS_KEY}}"
+      ARM_SUBSCRIPTION_ID: "{{.ARM_SUBSCRIPTION_ID}}"
+      ARM_TENANT_ID: "{{.ARM_TENANT_ID}}"
     cmd: terraform init -reconfigure -backend-config=env/test/test.tfbackend
 
   test:plan:
     env:
       ARM_ACCESS_KEY: "{{.ARM_ACCESS_KEY}}"
+      ARM_SUBSCRIPTION_ID: "{{.ARM_SUBSCRIPTION_ID}}"
+      ARM_TENANT_ID: "{{.ARM_TENANT_ID}}"
     cmd: terraform plan -var-file=env/test/test.tfvars
 
   test:apply:
     env:
       ARM_ACCESS_KEY: "{{.ARM_ACCESS_KEY}}"
+      ARM_SUBSCRIPTION_ID: "{{.ARM_SUBSCRIPTION_ID}}"
+      ARM_TENANT_ID: "{{.ARM_TENANT_ID}}"
     cmd: terraform apply -var-file=env/test/test.tfvars
 
   test:destroy:
     env:
       ARM_ACCESS_KEY: "{{.ARM_ACCESS_KEY}}"
+      ARM_SUBSCRIPTION_ID: "{{.ARM_SUBSCRIPTION_ID}}"
+      ARM_TENANT_ID: "{{.ARM_TENANT_ID}}"
     cmd: terraform destroy -var-file=env/test/test.tfvars

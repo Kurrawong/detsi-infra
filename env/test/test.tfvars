@@ -7,6 +7,7 @@ prez_api = {
   runtime              = "python"
   storage_account_tier = "Standard"
   storage_replication  = "LRS"
+  domain_name          = "prez-api"
 }
 dns = {
   zone_name = "detsi.dev.kurrawong.ai"

@@ -10,7 +10,7 @@ output "custom_domain_url" {
 
 output "dns_zone_name_servers" {
   description = "Name servers for the DNS zone (to configure in your parent domain)"
-  value       = var.dns.zone_name != null ? azurerm_dns_zone.custom_domain[0].name_servers : null
+  value       = var.dns.zone_name != null ? azurerm_dns_zone.custom_domain.name_servers : null
 }
 
 output "github_actions_client_id" {
@@ -56,12 +56,12 @@ output "prez_ui_static_web_app_name" {
 
 output "prez_api_function_app_name" {
   description = "The name of the Prez API Function App."
-  value       = azurerm_linux_function_app.prez_api.name
+  value       = azurerm_function_app_flex_consumption.prez_api.name
 }
 
 output "prez_api_function_app_url" {
   description = "The public URL of the Prez API Function App."
-  value       = "https://${azurerm_linux_function_app.prez_api.default_hostname}"
+  value       = "https://${azurerm_function_app_flex_consumption.prez_api.default_hostname}"
 }
 
 output "prez_api_function_app_custom_domain_url" {

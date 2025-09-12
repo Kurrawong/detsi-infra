@@ -41,5 +41,6 @@ variable "prez_api" {
     runtime              = string
     storage_account_tier = string
     storage_replication  = string
+    domain_name          = string
   })
 }
