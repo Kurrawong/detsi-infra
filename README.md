@@ -1,5 +1,8 @@
 # DETSI Infra Code
 
-## Custom Domain Name and SSL Certificate
+This repository contains the Terraform code that defines the resources for DETSI's Prez deployment to Azure.
 
-Still need to investigate this for flex consumption function apps.
+- Prez API is deployed as a Function App on a Flex Consumption plan.
+- Prez UI is deployed as a Static Web App.
+
+The application code for Prez API and Prez UI are deployed via GitHub Actions.
